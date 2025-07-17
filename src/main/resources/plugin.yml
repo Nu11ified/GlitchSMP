@@ -1,0 +1,32 @@
+name: GlitchSMP
+version: '1.0-SNAPSHOT'
+main: org.nu11ified.glitchSMP.GlitchSMP
+api-version: '1.21'
+load: STARTUP
+authors: [ Nu11ified @ Github ]
+description: "A plugin that adds glitches to the Glitch SMP server. Players can equip up to two glitches at a time to change gameplay from normal running around to PVP."
+website: https://github.com/nu11ified
+
+commands:
+  glitch:
+    description: Main command for the Glitch SMP plugin
+    usage: /<command> <give|equip|unequip|list> [player] [glitch]
+    permission: glitchsmp.command.glitch
+    aliases: [g]
+
+permissions:
+  glitchsmp.command.glitch:
+    description: Allows use of the /glitch command
+    default: true
+  glitchsmp.command.glitch.give:
+    description: Allows giving glitches to players
+    default: op
+  glitchsmp.command.glitch.list:
+    description: Allows listing available glitches
+    default: true
+  glitchsmp.command.glitch.equip:
+    description: Allows equipping glitches
+    default: true
+  glitchsmp.command.glitch.unequip:
+    description: Allows unequipping glitches
+    default: true
