@@ -88,6 +88,9 @@ public class GlitchDisplay {
         // Build the display string
         StringBuilder displayBuilder = new StringBuilder();
         
+        // Add slot indicator
+        displayBuilder.append(ChatColor.GOLD).append("Glitches: ");
+        
         // Add each equipped glitch to the display
         for (int i = 0; i < equippedGlitches.size(); i++) {
             Glitch glitch = equippedGlitches.get(i);
@@ -96,6 +99,10 @@ public class GlitchDisplay {
             if (i > 0) {
                 displayBuilder.append(" ").append(ChatColor.GRAY).append("|").append(" ");
             }
+            
+            // Add slot indicator
+            String slotName = (i == 0) ? "R" : "L"; // Right (0) or Left (1)
+            displayBuilder.append(ChatColor.AQUA).append("[").append(slotName).append("] ");
             
             // Add the glitch name with appropriate color
             if (glitchManager.isGlitchActive(player, glitch)) {
@@ -118,7 +125,14 @@ public class GlitchDisplay {
                 // Ready glitch - yellow
                 displayBuilder.append(ChatColor.YELLOW);
                 displayBuilder.append(glitch.getName());
+                displayBuilder.append(" ").append(ChatColor.GREEN).append("✓");
             }
+        }
+        
+        // Add activation hint
+        if (equippedGlitches.size() > 0) {
+            displayBuilder.append(" ").append(ChatColor.GRAY).append("| ");
+            displayBuilder.append(ChatColor.WHITE).append("Offhand: Right, Crouch+Offhand: Left");
         }
         
         // Send the action bar message

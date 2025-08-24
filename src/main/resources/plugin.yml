@@ -30,3 +30,9 @@ permissions:
   glitchsmp.command.glitch.unequip:
     description: Allows unequipping glitches
     default: true
+  glitchsmp.command.glitch.reset:
+    description: Allows resetting player glitch crafting counts
+    default: op
+  glitchsmp.command.glitch.status:
+    description: Allows viewing player glitch status
+    default: op

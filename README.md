@@ -122,8 +122,15 @@ stateDiagram-v2
 | `/glitch give <player> <type>` | `glitchsmp.command.glitch.give` | Give a glitch to a player |
 | `/glitch equip <type>` | `glitchsmp.command.glitch.equip` | Equip a glitch |
 | `/glitch unequip <type>` | `glitchsmp.command.glitch.unequip` | Unequip a glitch |
-| `/glitch list` | `glitchsmp.command.glitch.list` | List available glitches |
+| `/glitch list [all]` | `glitchsmp.command.glitch.list` | List available glitches |
 | `/glitch help` | `glitchsmp.command.glitch` | Show help message |
+
+#### Admin Commands
+
+| Command | Permission | Description |
+|---------|------------|-------------|
+| `/glitch reset <player>` | `glitchsmp.command.glitch.reset` | Reset player's glitch crafting count |
+| `/glitch status <player>` | `glitchsmp.command.glitch.status` | View player's glitch status |
 
 ### Permissions
 
@@ -133,14 +140,78 @@ glitchsmp.command.glitch.give: op       # Give glitches to players
 glitchsmp.command.glitch.list: true     # List available glitches
 glitchsmp.command.glitch.equip: true    # Equip glitches
 glitchsmp.command.glitch.unequip: true  # Unequip glitches
+glitchsmp.command.glitch.reset: op      # Reset player glitch counts
+glitchsmp.command.glitch.status: op     # View player glitch status
 ```
+
+### Crafting System
+
+Glitches can now be crafted using custom recipes! Server owners can customize these recipes in the `recipes.yml` file with a flexible item definition system:
+
+```yaml
+# ITEM DEFINITIONS:
+# Define what each letter represents
+items:
+  E: minecraft:ender_pearl
+  D: minecraft:diamond
+  G: minecraft:glass
+
+# RECIPES:
+# Use letters in 3x3 grid patterns
+TELEPORT:
+  - "E E E"
+  - "E E E" 
+  - "E E E"
+```
+
+**Benefits of the new system:**
+- **Easy to add new items**: Just add them to the `items` section
+- **Flexible recipes**: Use any letter combination in 3x3 grids
+- **Item agnostic**: Recipes don't need to specify materials directly
+- **Easy customization**: Change materials without modifying recipe patterns
+
+**How to use:**
+1. **Obtain Glitch Items**: Craft glitches using the recipes in `recipes.yml`
+2. **Right-click Glitch Items**: Right-click any glitch item to add it to your collection
+3. **Equip Glitches**: Use `/glitch equip <glitch>` to equip up to 2 glitches
+4. **Activate Glitches**: Use the intuitive activation system (see below)
+
+### Intuitive Activation System
+
+**Glitch Slots:**
+- **Right Slot (Slot 0)**: Activated with offhand keybind (F key)
+- **Left Slot (Slot 1)**: Activated with crouch + offhand keybind
+
+**Activation Steps:**
+1. **Equip Glitches**: Use `/glitch equip` to equip up to 2 glitches
+2. **Select Slot**: 
+   - Stand normally for right slot
+   - Crouch for left slot
+3. **Activate**: Press your offhand keybind (F key by default)
+4. **Visual Feedback**: Action bar shows which slot is selected and activation status
+
+**No more commands needed for activation!** Just use your offhand keybind naturally during gameplay.
+
+### Anti-Stockpiling System
+
+**Glitch Limits:**
+- **Maximum 2 glitches per player**: Prevents mass production
+- **Death mechanics**: Players drop one random glitch when they die
+- **Duplicate prevention**: Cannot pick up glitches you already own
+- **Crafting enforcement**: Cannot craft more than 2 glitches
+
+**Death & Recovery:**
+1. **On Death**: One random glitch drops as an item at death location
+2. **Item Pickup**: Other players can pick up dropped glitches (if they have empty slots)
+3. **Crafting Reset**: Death reduces your crafting count, allowing you to craft again
+4. **Balance**: Ensures glitches circulate between players instead of accumulating
 
 ### Player Experience
 
-1. **Obtain Glitches**: Admins give glitches using `/glitch give`
+1. **Obtain Glitches**: Craft glitches using recipes OR admins give glitches using `/glitch give`
 2. **Equip Glitches**: Players equip up to 2 glitches using `/glitch equip`
-3. **Monitor Status**: Real-time display shows equipped glitches above hotbar
-4. **Activate Glitches**: Use glitch abilities during gameplay
+3. **Monitor Status**: Real-time display shows equipped glitches above hotbar with slot indicators
+4. **Activate Glitches**: Use intuitive offhand keybind system during gameplay
 5. **Manage Cooldowns**: Wait for cooldowns to expire before reusing
 
 ## 🔧 Technical Implementation
@@ -173,8 +244,33 @@ glitchsmp.command.glitch.unequip: true  # Unequip glitches
 - **Purpose**: Real-time status display
 - **Features**:
   - Action bar updates every 0.5 seconds
-  - Color-coded status indicators
+  - Color-coded status indicators with slot information
   - Duration and cooldown timers
+  - Enhanced visual feedback with slot indicators
+
+#### `RecipeManager.java` - Crafting System
+- **Purpose**: Manages glitch crafting recipes
+- **Features**:
+  - Loads custom recipes from `recipes.yml`
+  - Registers recipes with the server
+  - Creates glitch items with custom lore
+  - Server owner customization support
+
+#### `ActivationManager.java` - Intuitive Activation
+- **Purpose**: Handles glitch activation through player actions
+- **Features**:
+  - Offhand keybind detection for right slot
+  - Crouch + offhand detection for left slot
+  - Glitch item interaction handling
+  - Player state tracking and cleanup
+
+#### `CraftingLimiter.java` - Anti-Stockpiling System
+- **Purpose**: Prevents glitch overproduction and manages death mechanics
+- **Features**:
+  - 2-glitch limit per player
+  - Random glitch dropping on death
+  - Duplicate glitch prevention
+  - Crafting cooldown enforcement
 
 ### Glitch Implementation Pattern
 
@@ -210,13 +306,22 @@ public class ExampleGlitch extends Glitch {
 
 ### Action Bar Display
 
-The plugin provides real-time status updates through the action bar:
+The plugin provides real-time status updates through the action bar with enhanced slot indicators:
 
 - **🟢 Green**: Active glitch with remaining duration
-- **🔴 Red**: Glitch on cooldown with remaining time
-- **🟡 Yellow**: Ready glitch available for activation
+- **🔴 Red**: Glitch on cooldown with remaining time  
+- **🟡 Yellow**: Ready glitch available for activation with ✓ checkmark
+- **🔵 Blue**: Slot indicators [R] for right slot, [L] for left slot
+- **🟠 Gold**: "Glitches:" label and activation hints
 
-Example: `Invisibility Glitch (15s) | Teleport Glitch (5s)`
+**New Format Example:**
+```
+Glitches: [R] Invisibility Glitch ✓ | [L] Teleport Glitch (25s) | Offhand: Right, Crouch+Offhand: Left
+```
+
+**Slot System:**
+- **[R]**: Right slot - activated with offhand keybind (F key)
+- **[L]**: Left slot - activated with crouch + offhand keybind
 
 ### Glitch Effects
 
@@ -237,7 +342,32 @@ Each glitch includes:
 2. Place in your server's `plugins/` directory
 3. Restart your server
 4. Configure permissions as needed
-5. Use `/glitch give` to distribute glitches to players
+5. Customize glitch recipes in `recipes.yml` (optional)
+6. Use `/glitch give` to distribute glitches to players OR let them craft them
+
+### Configuration
+
+#### `recipes.yml`
+The plugin automatically creates a `recipes.yml` file in the `plugins/GlitchSMP/` folder. You can customize this file to change glitch crafting recipes:
+
+```yaml
+# Example: Change Teleport Glitch recipe to use diamonds
+TELEPORT:
+  - "D D D"
+  - "D D D" 
+  - "D D D"
+  ingredients:
+    D: DIAMOND
+```
+
+**Recipe Format:**
+- **Shape**: 3x3 grid pattern using single characters
+- **Ingredients**: Map of characters to Minecraft material names
+- **Customization**: Modify materials, change patterns, or add new recipes
+
+**Available Materials:**
+- Use any valid Minecraft material name (e.g., `DIAMOND`, `EMERALD`, `NETHERITE_INGOT`)
+- Check the [Minecraft Wiki](https://minecraft.wiki/w/Material) for complete material list
 
 ## 🔄 Development
 
@@ -279,7 +409,18 @@ src/main/java/org/nu11ified/glitchSMP/
 │       ├── InvisibilityGlitch.java
 │       └── TeleportGlitch.java
 └── manager/
-    └── GlitchManager.java      # Data management
+    ├── GlitchManager.java      # Data management
+    ├── RecipeManager.java      # Crafting system
+    ├── ActivationManager.java  # Intuitive activation
+    └── CraftingLimiter.java    # Anti-stockpiling system
+```
+
+### Configuration Files
+
+```
+src/main/resources/
+├── plugin.yml                  # Plugin metadata and commands
+└── recipes.yml                 # Custom glitch crafting recipes
 ```
 
 ## 🎯 Gameplay Impact
@@ -288,6 +429,38 @@ src/main/java/org/nu11ified/glitchSMP/
 - **Glitch Combinations**: Players must choose complementary glitch pairs
 - **Timing**: Proper activation timing is crucial for success
 - **Resource Management**: Limited glitch slots create strategic decisions
+
+### New Features in v2.0
+
+#### 🛠️ **Crafting System**
+- **Custom Recipes**: Server owners can define unique crafting recipes for each glitch
+- **Glitch Items**: Physical items that players can craft and collect
+- **Right-click to Obtain**: Simple interaction system for getting glitches
+- **Configurable**: Easy to modify recipes in `recipes.yml`
+
+#### 🎮 **Intuitive Activation**
+- **Offhand Keybind**: Natural F key usage for right slot activation
+- **Crouch + Offhand**: Left slot activation with crouch detection
+- **No Commands**: Seamless integration with normal gameplay
+- **Visual Feedback**: Clear slot selection and activation status
+
+#### 🎨 **Enhanced UI**
+- **Slot Indicators**: [R] and [L] markers for clear slot identification
+- **Status Symbols**: ✓ checkmarks for ready glitches
+- **Activation Hints**: Built-in help text in the action bar
+- **Real-time Updates**: Instant feedback on all glitch states
+
+#### 🛡️ **Anti-Stockpiling Protection**
+- **2-Glitch Limit**: Prevents players from accumulating hundreds of glitches
+- **Death Mechanics**: Random glitch dropping on death for item circulation
+- **Duplicate Prevention**: Cannot pick up glitches you already own
+- **Crafting Enforcement**: Automatic limit enforcement during crafting
+
+#### 🔧 **Flexible Crafting System**
+- **Item Definitions**: Centralized item mapping in `items` section
+- **Recipe Patterns**: Clean 3x3 grid patterns using letters
+- **Easy Customization**: Add new items without changing recipe structure
+- **Material Agnostic**: Recipes work with any valid Minecraft materials
 
 ### PvP Enhancement
 - **Dynamic Combat**: Traditional PvP becomes unpredictable
@@ -299,9 +472,39 @@ src/main/java/org/nu11ified/glitchSMP/
 - **Duration Limits**: Temporary effects prevent permanent advantages
 - **Counterplay**: Each glitch has weaknesses and counters
 
-## 🤝 Contributing
+## 🔧 Troubleshooting
 
-We welcome contributions! Please:
+### Common Issues
+
+**Glitches not activating:**
+- Ensure you have glitches equipped using `/glitch equip`
+- Check that you're using the correct keybind (F key by default)
+- Verify you're not on cooldown (check action bar for red text)
+
+**Crafting recipes not working:**
+- Restart the server after modifying `recipes.yml`
+- Check that material names are valid (e.g., `DIAMOND`, not `diamond`)
+- Ensure recipe format follows the 3x3 grid pattern
+
+**Action bar not showing:**
+- Check if you have glitches equipped
+- Verify the plugin is enabled (`/plugins` command)
+- Restart the server if issues persist
+
+**Permission errors:**
+- Ensure you have the correct permissions for commands
+- Check `plugin.yml` for permission requirements
+- Use `/glitch help` to see available commands
+
+### Getting Help
+
+If you encounter issues:
+1. Check the server console for error messages
+2. Verify your Minecraft version (1.21+ required)
+3. Ensure you're using Paper/Spigot, not vanilla
+4. Check the [GitHub Issues](https://github.com/nu11ified/GlitchSMP/issues) page
+
+## 🤝 Contributing
 
 1. Fork the repository
 2. Create a feature branch

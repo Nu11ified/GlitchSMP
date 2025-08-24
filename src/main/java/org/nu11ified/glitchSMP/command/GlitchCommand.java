@@ -12,6 +12,7 @@ import org.nu11ified.glitchSMP.glitch.Glitch;
 import org.nu11ified.glitchSMP.glitch.GlitchFactory;
 import org.nu11ified.glitchSMP.glitch.GlitchType;
 import org.nu11ified.glitchSMP.manager.GlitchManager;
+import org.nu11ified.glitchSMP.manager.CraftingLimiter;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -24,6 +25,7 @@ import java.util.stream.Collectors;
 public class GlitchCommand implements CommandExecutor, TabCompleter {
     private final GlitchManager glitchManager;
     private final GlitchFactory glitchFactory;
+    private final CraftingLimiter craftingLimiter;
     
     /**
      * Constructor for GlitchCommand
@@ -31,10 +33,12 @@ public class GlitchCommand implements CommandExecutor, TabCompleter {
      * @param plugin The main plugin instance (not used)
      * @param glitchManager The glitch manager instance
      * @param glitchFactory The glitch factory instance
+     * @param craftingLimiter The crafting limiter instance
      */
-    public GlitchCommand(GlitchSMP plugin, GlitchManager glitchManager, GlitchFactory glitchFactory) {
+    public GlitchCommand(GlitchSMP plugin, GlitchManager glitchManager, GlitchFactory glitchFactory, CraftingLimiter craftingLimiter) {
         this.glitchManager = glitchManager;
         this.glitchFactory = glitchFactory;
+        this.craftingLimiter = craftingLimiter;
     }
     
     @Override
@@ -55,6 +59,10 @@ public class GlitchCommand implements CommandExecutor, TabCompleter {
                 return handleUnequipCommand(sender, args);
             case "list":
                 return handleListCommand(sender, args);
+            case "reset":
+                return handleResetCommand(sender, args);
+            case "status":
+                return handleStatusCommand(sender, args);
             case "help":
                 sendHelpMessage(sender);
                 return true;
@@ -309,6 +317,89 @@ public class GlitchCommand implements CommandExecutor, TabCompleter {
     }
     
     /**
+     * Handles the reset subcommand (admin only)
+     * 
+     * @param sender The command sender
+     * @param args The command arguments
+     * @return true if the command was handled, false otherwise
+     */
+    private boolean handleResetCommand(CommandSender sender, String[] args) {
+        // Check permission
+        if (!sender.hasPermission("glitchsmp.command.glitch.reset")) {
+            sender.sendMessage(ChatColor.RED + "You don't have permission to use this command.");
+            return true;
+        }
+        
+        // Check arguments
+        if (args.length < 2) {
+            sender.sendMessage(ChatColor.RED + "Usage: /glitch reset <player>");
+            return true;
+        }
+        
+        // Get player
+        Player target = Bukkit.getPlayer(args[1]);
+        if (target == null) {
+            sender.sendMessage(ChatColor.RED + "Player not found: " + args[1]);
+            return true;
+        }
+        
+        // Reset the player's crafted glitch count
+        craftingLimiter.resetCraftedGlitchCount(target);
+        sender.sendMessage(ChatColor.GREEN + "Reset " + target.getName() + "'s glitch crafting count.");
+        
+        return true;
+    }
+    
+    /**
+     * Handles the status subcommand (admin only)
+     * 
+     * @param sender The command sender
+     * @param args The command arguments
+     * @return true if the command was handled, false otherwise
+     */
+    private boolean handleStatusCommand(CommandSender sender, String[] args) {
+        // Check permission
+        if (!sender.hasPermission("glitchsmp.command.glitch.status")) {
+            sender.sendMessage(ChatColor.RED + "You don't have permission to use this command.");
+            return true;
+        }
+        
+        // Check arguments
+        if (args.length < 2) {
+            sender.sendMessage(ChatColor.RED + "Usage: /glitch status <player>");
+            return true;
+        }
+        
+        // Get player
+        Player target = Bukkit.getPlayer(args[1]);
+        if (target == null) {
+            sender.sendMessage(ChatColor.RED + "Player not found: " + args[1]);
+            return true;
+        }
+        
+        // Get player's glitch status
+        int craftedCount = craftingLimiter.getPlayerCraftedGlitchCount(target);
+        java.util.Set<Glitch> ownedGlitches = glitchManager.getOwnedGlitches(target);
+        List<Glitch> equippedGlitches = glitchManager.getEquippedGlitches(target);
+        
+        sender.sendMessage(ChatColor.YELLOW + "=== " + target.getName() + "'s Glitch Status ===");
+        sender.sendMessage(ChatColor.GRAY + "Crafted Glitches: " + ChatColor.WHITE + craftedCount + "/2");
+        sender.sendMessage(ChatColor.GRAY + "Owned Glitches: " + ChatColor.WHITE + ownedGlitches.size());
+        sender.sendMessage(ChatColor.GRAY + "Equipped Glitches: " + ChatColor.WHITE + equippedGlitches.size());
+        
+        if (!ownedGlitches.isEmpty()) {
+            sender.sendMessage(ChatColor.GRAY + "Owned:");
+            for (Glitch glitch : ownedGlitches) {
+                boolean isEquipped = equippedGlitches.contains(glitch);
+                ChatColor color = isEquipped ? ChatColor.GREEN : ChatColor.WHITE;
+                sender.sendMessage(color + "  - " + glitch.getName());
+            }
+        }
+        
+        return true;
+    }
+    
+    /**
      * Sends the help message to the sender
      * 
      * @param sender The command sender
@@ -320,14 +411,40 @@ public class GlitchCommand implements CommandExecutor, TabCompleter {
         sender.sendMessage(ChatColor.YELLOW + "/glitch unequip <glitch> " + ChatColor.GRAY + "- Unequips a glitch");
         sender.sendMessage(ChatColor.YELLOW + "/glitch list [all] " + ChatColor.GRAY + "- Lists your glitches or all available glitches");
         sender.sendMessage(ChatColor.YELLOW + "/glitch help " + ChatColor.GRAY + "- Shows this help message");
+        
+        // Admin commands
+        if (sender.hasPermission("glitchsmp.command.glitch.reset")) {
+            sender.sendMessage(ChatColor.YELLOW + "/glitch reset <player> " + ChatColor.GRAY + "- Resets player's glitch crafting count");
+        }
+        if (sender.hasPermission("glitchsmp.command.glitch.status")) {
+            sender.sendMessage(ChatColor.YELLOW + "/glitch status <player> " + ChatColor.GRAY + "- Shows player's glitch status");
+        }
+        
+        sender.sendMessage("");
+        sender.sendMessage(ChatColor.LIGHT_PURPLE + "Glitch Activation:");
+        sender.sendMessage(ChatColor.GRAY + "• Right-click glitch items to obtain them");
+        sender.sendMessage(ChatColor.GRAY + "• Use offhand keybind (F) to activate right slot glitch");
+        sender.sendMessage(ChatColor.GRAY + "• Crouch + offhand keybind to activate left slot glitch");
+        sender.sendMessage(ChatColor.GRAY + "• Craft glitches using recipes in recipes.yml");
+        sender.sendMessage(ChatColor.GRAY + "• Limited to 2 glitches per player (drops on death)");
     }
     
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
         if (args.length == 1) {
             // Suggest subcommands
-            return Arrays.asList("give", "equip", "unequip", "list", "help")
-                .stream()
+            List<String> subcommands = new ArrayList<>();
+            subcommands.addAll(Arrays.asList("give", "equip", "unequip", "list", "help"));
+            
+            // Add admin commands if player has permission
+            if (sender.hasPermission("glitchsmp.command.glitch.reset")) {
+                subcommands.add("reset");
+            }
+            if (sender.hasPermission("glitchsmp.command.glitch.status")) {
+                subcommands.add("status");
+            }
+            
+            return subcommands.stream()
                 .filter(s -> s.startsWith(args[0].toLowerCase()))
                 .collect(Collectors.toList());
         } else if (args.length == 2) {
