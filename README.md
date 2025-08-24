@@ -192,6 +192,26 @@ TELEPORT:
 
 **No more commands needed for activation!** Just use your offhand keybind naturally during gameplay.
 
+### Glitch Activation in Detail
+
+**Complete Activation Process:**
+1. **Equip Glitches**: Use `/glitch equip <glitch>` to prepare glitches
+2. **Select Slot**: Stand normally (right slot) or crouch (left slot)
+3. **Activate**: Press F key (offhand keybind) to trigger selected glitch
+4. **Feedback**: Action bar shows activation status and cooldowns
+
+**Real Usage Examples:**
+- **Teleport Glitch**: Look at target location, press F key, instant teleport
+- **Invisibility Glitch**: Crouch + F key, 30 seconds of invisibility
+- **Immunity Glitch**: Press F key, 30 seconds of damage immunity
+- **Freeze Glitch**: Crouch + F key, freeze opponent for 30 seconds
+
+**Strategic Usage Scenarios:**
+- **PvP Combat**: Activate defensive glitches before engaging enemies
+- **Escape Situations**: Use mobility glitches to reposition safely
+- **Team Coordination**: Combine different glitch effects for coordinated attacks
+- **Resource Gathering**: Use utility glitches to enhance efficiency
+
 ### Anti-Stockpiling System
 
 **Glitch Limits:**
@@ -213,6 +233,76 @@ TELEPORT:
 3. **Monitor Status**: Real-time display shows equipped glitches above hotbar with slot indicators
 4. **Activate Glitches**: Use intuitive offhand keybind system during gameplay
 5. **Manage Cooldowns**: Wait for cooldowns to expire before reusing
+
+### Gameplay Examples
+
+#### **PvP Combat Scenario:**
+```
+1. Player sees enemy approaching with diamond sword
+2. Player crouches (selects left slot with Invisibility Glitch)
+3. Player presses F key → Invisibility Glitch activates
+4. Player becomes invisible for 30 seconds
+5. Player can safely reposition or escape
+6. After 30 seconds, invisibility ends
+7. Must wait 5 minutes before using again
+```
+
+#### **Escape and Reposition:**
+```
+1. Player is trapped by multiple enemies
+2. Player looks at safe location 20 blocks away
+3. Player presses F key (right slot with Teleport Glitch)
+4. Player instantly teleports to safety
+5. Teleport Glitch goes on 30-second cooldown
+6. Player can now plan next move
+```
+
+#### **Defensive Strategy:**
+```
+1. Player is low health in combat
+2. Player presses F key (right slot with Immunity Glitch)
+3. Player becomes immune to damage for 30 seconds
+4. Player can safely retreat or counter-attack
+5. Immunity Glitch goes on 2-minute cooldown
+6. Player must be strategic about next engagement
+```
+
+#### **Team Coordination:**
+```
+1. Player 1: Uses Immunity Glitch → Becomes tank for team
+2. Player 2: Uses Invisibility Glitch → Flanks enemies unseen
+3. Player 3: Uses Teleport Glitch → Repositions for support
+4. Coordinated attack with different glitch effects
+5. Each player manages their own cooldowns
+```
+
+### Learning Curve and Mastery
+
+#### **Beginner Level (First Time Users):**
+- **"How do I use glitches?"**
+  - Read action bar: "Offhand: Right, Crouch+Offhand: Left"
+  - Try pressing F key → Success!
+  - Understand basic slot system
+
+#### **Intermediate Level (Getting Used To):**
+- **"Which slot am I using?"**
+  - Check action bar: [R] and [L] indicators
+  - Stand normally = right slot, crouch = left slot
+  - Plan which glitch to use in which slot
+
+#### **Advanced Level (Strategic Usage):**
+- **"Master glitch combinations"**
+  - Know all cooldowns and durations
+  - Plan glitch combinations for different scenarios
+  - Use at perfect timing for maximum effect
+  - Coordinate with teammates
+
+#### **Expert Level (PvP Mastery):**
+- **"Predict and counter"**
+  - Anticipate enemy glitch usage
+  - Save glitches for critical moments
+  - Use glitches to create openings
+  - Master the art of glitch timing
 
 ## 🔧 Technical Implementation
 
@@ -319,9 +409,19 @@ The plugin provides real-time status updates through the action bar with enhance
 Glitches: [R] Invisibility Glitch ✓ | [L] Teleport Glitch (25s) | Offhand: Right, Crouch+Offhand: Left
 ```
 
+**Status Examples:**
+- **Ready**: [R] Teleport Glitch ✓ (green checkmark = ready to use)
+- **Active**: [L] Invisibility Glitch (15s) (green with timer = currently active)
+- **Cooldown**: [R] Teleport Glitch (45s) (red with timer = waiting for cooldown)
+
 **Slot System:**
 - **[R]**: Right slot - activated with offhand keybind (F key)
 - **[L]**: Left slot - activated with crouch + offhand keybind
+
+**Slot Selection Feedback:**
+- **Standing normally**: Right slot [R] automatically selected
+- **Crouching**: Left slot [L] automatically selected
+- **Real-time updates**: Action bar changes instantly when switching slots
 
 ### Glitch Effects
 
@@ -329,6 +429,56 @@ Each glitch includes:
 - **Visual Effects**: Particles, glowing, screen overlays
 - **Audio Effects**: Custom sounds for activation/deactivation
 - **Feedback Messages**: Clear status notifications
+
+### Cooldown and Duration Management
+
+#### **How Cooldowns Work:**
+```
+Glitch activated → Duration runs → Cooldown starts → Ready again
+```
+
+#### **Example Timeline:**
+```
+0:00 - Activate Teleport Glitch
+0:00-0:30 - Teleport effect active (instant)
+0:30-2:30 - Cooldown period (2 minutes)
+2:30+ - Ready to use again
+```
+
+#### **Multiple Glitch Management:**
+```
+Player has 2 glitches equipped:
+- Teleport Glitch: On cooldown (1:45 remaining)
+- Invisibility Glitch: Ready ✓
+
+Strategy: Use Invisibility while waiting for Teleport to recharge
+```
+
+#### **Cooldown Types:**
+- **Short Cooldown (30s)**: Teleport, Freeze, Item Glitch
+- **Medium Cooldown (2-5 min)**: Immunity, Invisibility, Effect Glitch
+- **Long Cooldown (5+ min)**: Glide, Crash, Virus Glitch
+
+### Why This System Works
+
+#### **Advantages of Natural Activation:**
+1. **Intuitive Controls**: Uses natural Minecraft controls (F key, crouch)
+2. **Fast Activation**: No typing commands during combat
+3. **Strategic Depth**: Requires planning and timing
+4. **Balanced Gameplay**: Cooldowns prevent spam
+5. **Clear Feedback**: Visual indicators show exactly what's happening
+
+#### **Player Experience Benefits:**
+- **"This feels natural!"** - No learning curve for controls
+- **"I can use this in combat!"** - Fast activation without commands
+- **"I need to plan my usage!"** - Strategic depth and timing
+- **"The feedback is clear!"** - Always know what's happening
+
+#### **Integration with Minecraft:**
+- **Seamless**: Feels like part of vanilla Minecraft
+- **Familiar**: Players already know F key and crouch
+- **Responsive**: Instant activation and feedback
+- **Accessible**: Works for all skill levels
 
 ## 🚀 Installation
 
